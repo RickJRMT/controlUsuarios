@@ -1,5 +1,5 @@
-// aquí voy  a probar esta manera de importación para ver su funcionamiento
-import {db} from ('../config/conexion_db');
+const db = require('../config/conexion_db');
+
 
 class RolesController {
     async obtener(req, res) {

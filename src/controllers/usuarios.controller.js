@@ -1,4 +1,4 @@
-const db = require('..confing/conexion_db');
+const db = require('../config/conexion_db');
 const bcrypt = require('bcrypt');
 
 class UsuariosController {
