@@ -9,7 +9,7 @@ class RolPermisoController {
                 SELECT rp.id_rol_permiso, rp.id_rol, r.nombre AS rol, p.nombre AS permiso
                 FROM rol_permiso rp
                 JOIN roles r ON rp.id_rol = r.id_rol
-                JOIN permisos p ON rp.permiso_id = p.id_permiso
+                JOIN permisos p ON rp.id_permiso = p.id_permiso
             `);
             res.json(rolPermisos);
         } catch (error) {
@@ -26,11 +26,11 @@ class RolPermisoController {
                     rp.id_rol_permiso,
                     rp.id_rol,
                     r.nombre AS rol,
-                    rp.permiso_id,
+                    rp.id_permiso,
                     p.nombre AS permiso
                 FROM rol_permiso rp
                 JOIN roles r ON rp.id_rol = r.id_rol
-                JOIN permisos p ON rp.permiso_id = p.id_permiso
+                JOIN permisos p ON rp.id_permiso = p.id_permiso
                 WHERE rp.id_rol = ?
             `, [idrol]); // parámetro
 
@@ -49,7 +49,7 @@ class RolPermisoController {
                 SELECT rp.id_rol_permiso, r.nombre AS rol, p.nombre AS permiso
                 FROM rol_permiso rp
                 JOIN roles r ON rp.id_rol = r.id_rol
-                JOIN permisos p ON rp.permiso_id = p.id_permiso
+                JOIN permisos p ON rp.id_permiso = p.id_permiso
                 WHERE rp.id_rol_permiso = ?
             `, [id]);
 
@@ -64,11 +64,11 @@ class RolPermisoController {
 
     // Asignar un permiso a un rol
     async agregarRolPermiso(req, res) {
-        const { id_rol, permiso_id } = req.body;
+        const { id_rol, id_permiso} = req.body;
         try {
             await db.query(
-                'INSERT INTO rol_permiso (id_rol, permiso_id) VALUES (?, ?)',
-                [id_rol, permiso_id]
+                'INSERT INTO rol_permiso (id_rol, id_permiso) VALUES (?, ?)',
+                [id_rol, id_permiso]
             );
             res.json({ mensaje: 'Permiso asignado al rol correctamente' });
         } catch (error) {
@@ -79,11 +79,11 @@ class RolPermisoController {
     // Actualizar una relación (cambiar el permiso o el rol asociado)
     async actualizarRolPermiso(req, res) {
         const { id } = req.params;
-        const { id_rol, permiso_id } = req.body;
+        const { id_rol, id_permiso } = req.body;
         try {
             await db.query(
-                'UPDATE rol_permiso SET id_rol = ?, permiso_id = ? WHERE id_rol_permiso = ?',
-                [id_rol, permiso_id, id]
+                'UPDATE rol_permiso SET id_rol = ?, id_permiso = ? WHERE id_rol_permiso = ?',
+                [id_rol, id_permiso, id]
             );
             res.json({ mensaje: 'Relación rol-permiso actualizada correctamente' });
         } catch (error) {

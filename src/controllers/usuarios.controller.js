@@ -2,17 +2,17 @@ const db = require('../config/conexion_db');
 const bcrypt = require('bcrypt');
 
 class UsuariosController {
-    // Obtener todos los usuarios con su rol
+    // Obtener todos los usuarios con su rol y permisos
     async obtenerUsuarios(req, res) {
         try {
             const [usuarios] = await db.query(
-                `SELECT u.id_usuario, u.nombre, r.email, r.nombre AS rol,
-                        COALESCE(GROUP_CONCAT(p.nombre ORDER BT p.id_permiso SEPARATOR ', '), 'Sin permisos') AS permisos
-                  FROM usuarios u
-                  LEFT JOIN roles r ON u.id_rol = r.id_rol
-                  LEFT JOIN rol_permiso rp ON r.id_rol = rp.id_rol
-                  LEFT JOIN permisos p ON rp.permiso_id = p.id_permiso
-                  GROUP BY u.id_usuario, u.nombre, u.email, r.nombre`
+                `SELECT u.id_usuario, u.nombre, u.email, r.nombre AS rol,
+                    COALESCE(GROUP_CONCAT(p.nombre ORDER BY p.id_permiso SEPARATOR ', '), 'Sin permisos') AS permisos
+                FROM usuarios u
+                LEFT JOIN roles r ON u.id_rol = r.id_rol
+                LEFT JOIN rol_permiso rp ON r.id_rol = rp.id_rol
+                LEFT JOIN permisos p ON rp.id_permiso = p.id_permiso
+                GROUP BY u.id_usuario, u.nombre, u.email, r.nombre`
             );
             res.json(usuarios);
         } catch (error) {
@@ -21,23 +21,19 @@ class UsuariosController {
         }
     }
 
-
-    async obtenerUsuariosPorId(req, res) {
+    // Obtener un usuario por ID con su rol y permisos
+    async obtenerUsuarioPorId(req, res) {
         const { id } = req.params;
         try {
             const [usuario] = await db.query(
-                `SELECT
-                u.id_usuario,
-                u.nombre,
-                u.email,
-                r.nombre AS rol,
-                COALESCE(GROUP_CONCAT(p.nombre SEPERATOR ', '), 'Sin permisos') AS permisos
+                `SELECT u.id_usuario, u.nombre, u.email, r.nombre AS rol,
+                    COALESCE(GROUP_CONCAT(p.nombre SEPARATOR ', '), 'Sin permisos') AS permisos
                 FROM usuarios u
                 LEFT JOIN roles r ON u.id_rol = r.id_rol
                 LEFT JOIN rol_permiso rp ON r.id_rol = rp.id_rol
-                LEFT JOIN permisos p ON rp.permiso_id = p.id_permiso
+                LEFT JOIN permisos p ON rp.id_permiso = p.id_permiso
                 WHERE u.id_usuario = ?
-                GRUOP BY u.id_usuario, u.nombre, u.email. r.nombre`,
+                GROUP BY u.id_usuario, u.nombre, u.email, r.nombre`,
                 [id]
             );
 
@@ -47,13 +43,14 @@ class UsuariosController {
 
             res.json(usuario[0]);
         } catch (error) {
+            console.error(error);
             res.status(500).json({ error: 'Error al obtener usuario' });
         }
     }
 
     // Agregar un usuario nuevo
     async agregarUsuario(req, res) {
-        const { nombre, email, clave, id_rol } = req.body
+        const { nombre, email, clave, id_rol } = req.body;
         try {
             // Cifrar clave
             const hash = await bcrypt.hash(clave, 10);
@@ -64,6 +61,7 @@ class UsuariosController {
             );
             res.json({ mensaje: 'Usuario agregado correctamente' });
         } catch (error) {
+            console.error(error);
             res.status(500).json({ error: 'Error al agregar usuario' });
         }
     }
@@ -87,6 +85,7 @@ class UsuariosController {
             }
             res.json({ mensaje: 'Usuario actualizado correctamente' });
         } catch (error) {
+            console.error(error);
             res.status(500).json({ error: 'Error al actualizar usuario' });
         }
     }
@@ -98,6 +97,7 @@ class UsuariosController {
             await db.query(`DELETE FROM usuarios WHERE id_usuario = ?`, [id]);
             res.json({ mensaje: 'Usuario eliminado correctamente' });
         } catch (error) {
+            console.error(error);
             res.status(500).json({ error: 'Error al eliminar usuario' });
         }
     }
